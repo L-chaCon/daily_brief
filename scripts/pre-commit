@@ -18,7 +18,4 @@ if [[ -f scripts/forbidden.txt ]]; then
     exit 1
   fi
 fi
-
 # If nothing exited is safe to commit
-echo "this actually commited"
-exit 1
