@@ -1,0 +1,24 @@
+#!/bin/bash
+# This cancel execution if exit code is not 0
+set -euo pipefail
+
+# Check if gitleaks is installed
+if ! command -v gitleaks >/dev/null; then
+  echo "pre-commit: gitleaks is not installed (brew install gitleaks)"
+  exit 1
+fi
+
+# This picks the staged changes and exit with 1 if any leak is found
+gitleaks git --staged --exit-code 1
+
+# check for the forbidden file and grep the content to see if it matches
+if [[ -f scripts/forbidden.txt ]]; then
+  if git diff --cached -U0 | grep -i --file=scripts/forbidden.txt; then
+    echo "pre-commit: found something from forbidden.txt have a look"
+    exit 1
+  fi
+fi
+
+# If nothing exited is safe to commit
+echo "this actually commited"
+exit 1

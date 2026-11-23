@@ -1,0 +1,11 @@
+# Planning documents live only on this machine.
+docs/
+
+# Real Dia brief: contains work data (company URLs, Slack ids). Use sanitized fixtures instead.
+wednesday_brif.html
+
+# This is to not leak any secrets
+scripts/forbidden.txt
+
+# build output
+/brief
