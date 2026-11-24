@@ -24,7 +24,7 @@ func TestRun(t *testing.T) {
 		{"--help prints usage to stdout", []string{"--help"}, 0, "usage:", ""},
 		{"help prints usage to stdout", []string{"help"}, 0, "usage:", ""},
 		{"unknown command", []string{"bogus"}, 2, "", `unknown command "bogus"`},
-		{"known command is a stub", []string{"think"}, 2, "", "think: not implemented"},
+		{"known command is a stub", []string{"doctor"}, 2, "", "doctor: not implemented"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -51,7 +51,7 @@ func TestUsageListsAllCommands(t *testing.T) {
 }
 
 // Every subcommand exists and none of them is "unknown". Implemented commands drop out of the stub list.
-var stubs = []string{"think", "doctor", "connect"}
+var stubs = []string{"doctor", "connect"}
 
 func TestAllCommandsAreKnown(t *testing.T) {
 	for _, c := range commands {

@@ -11,6 +11,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -41,7 +42,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return 0
 	case "render":
 		return cmdRender(rest, stdout, stderr)
-	case "collect", "open", "run":
+	case "collect", "think", "open", "run":
 		env, err := newEnv(time.Now())
 		if err != nil {
 			fmt.Fprintf(stderr, "%s: %v\n", cmd, err)
@@ -50,12 +51,14 @@ func run(args []string, stdout, stderr io.Writer) int {
 		switch cmd {
 		case "collect":
 			return cmdCollect(env, rest, stdout, stderr)
+		case "think":
+			return cmdThink(env, rest, stdout, stderr)
 		case "open":
 			return cmdOpen(env, rest, stdout, stderr)
 		default:
 			return cmdRun(env, rest, stdout, stderr)
 		}
-	case "think", "doctor", "connect":
+	case "doctor", "connect":
 		fmt.Fprintf(stderr, "%s: not implemented\n", cmd)
 		return 2
 	default:
@@ -122,6 +125,10 @@ func loadBrief(dir string, raw Raw) (*Brief, error) {
 	var b Brief
 	err := readJSON(filepath.Join(dir, "brief.json"), &b)
 	if errors.Is(err, fs.ErrNotExist) {
+		if why, err := os.ReadFile(filepath.Join(dir, "think.error.txt")); err == nil {
+			first, _, _ := strings.Cut(string(why), "\n")
+			return nil, errors.New(first)
+		}
 		return nil, errors.New("no brief.json (think has not run)")
 	}
 	if err != nil {
@@ -207,19 +214,71 @@ func cmdOpen(env Env, args []string, stdout, stderr io.Writer) int {
 	return 0
 }
 
-// cmdRun is the whole pipeline for one day: collect, (think), render, open.
-func cmdRun(env Env, args []string, stdout, stderr io.Writer) int {
-	d, ok := dateFlag(env, "run", args, stderr)
-	if !ok {
+// cmdThink turns <run dir>/raw.json into brief.json (or think.error.txt). --dry-run only writes prompt.txt.
+func cmdThink(env Env, args []string, stdout, stderr io.Writer) int {
+	fl := flag.NewFlagSet("think", flag.ContinueOnError)
+	fl.SetOutput(stderr)
+	date := fl.String("date", "today", "today, yesterday, or YYYY-MM-DD")
+	dryRun := fl.Bool("dry-run", false, "write prompt.txt only; don't call the model")
+	model := fl.String("model", "", "claude model alias (default: config model, else sonnet)")
+	if err := fl.Parse(args); err != nil {
 		return 2
 	}
+	d, err := env.parseDateFlag(*date)
+	if err != nil {
+		fmt.Fprintf(stderr, "think: %v\n", err)
+		return 2
+	}
+	if *model != "" {
+		env.Config.Model = *model
+	}
+	dir := env.runDir(d)
+	if err := thinkDir(context.Background(), env, dir, claudeThinker(env, dir), *dryRun); err != nil {
+		fmt.Fprintf(stderr, "%v\n", err)
+		return 1
+	}
+	out := "brief.json"
+	if *dryRun {
+		out = "prompt.txt"
+	}
+	fmt.Fprintln(stdout, filepath.Join(dir, out))
+	return 0
+}
+
+// cmdRun is the whole pipeline for one day: collect, think, render, open.
+// A think failure is not fatal: the page renders degraded and says why.
+func cmdRun(env Env, args []string, stdout, stderr io.Writer) int {
+	fl := flag.NewFlagSet("run", flag.ContinueOnError)
+	fl.SetOutput(stderr)
+	date := fl.String("date", "today", "today, yesterday, or YYYY-MM-DD")
+	noThink := fl.Bool("no-think", false, "skip the LLM; render the degraded page")
+	noOpen := fl.Bool("no-open", false, "don't open the browser")
+	if err := fl.Parse(args); err != nil {
+		return 2
+	}
+	d, err := env.parseDateFlag(*date)
+	if err != nil {
+		fmt.Fprintf(stderr, "run: %v\n", err)
+		return 2
+	}
+	dir := env.runDir(d)
 	if _, err := collectTo(env, d, stderr); err != nil {
 		fmt.Fprintf(stderr, "run: collect: %v\n", err)
 		return 1
 	}
-	if _, err := renderDir(env.runDir(d), false); err != nil {
+	if !*noThink {
+		if err := thinkDir(context.Background(), env, dir, claudeThinker(env, dir), false); err != nil {
+			fmt.Fprintf(stderr, "run: think failed, rendering degraded page: %v\n", err)
+		}
+	}
+	path, err := renderDir(dir, *noThink)
+	if err != nil {
 		fmt.Fprintf(stderr, "run: render: %v\n", err)
 		return 1
+	}
+	if *noOpen {
+		fmt.Fprintln(stdout, path)
+		return 0
 	}
 	return cmdOpen(env, []string{"--date", d.String()}, stdout, stderr)
 }
