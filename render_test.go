@@ -214,3 +214,19 @@ func TestRenderCommand(t *testing.T) {
 		t.Errorf("missing raw.json: exit %d, want 1", code)
 	}
 }
+
+func TestRenderShowsClaudeAccount(t *testing.T) {
+	dir := t.TempDir()
+	for _, f := range []string{"raw.json", "brief.json"} {
+		b, _ := os.ReadFile(filepath.Join(basicDir, f))
+		os.WriteFile(filepath.Join(dir, f), b, 0o644)
+	}
+	writeJSONFile(filepath.Join(dir, "think.json"), thinkMeta{Account: "~/.claude-work", Model: "sonnet"})
+	if _, err := renderDir(dir, false); err != nil {
+		t.Fatal(err)
+	}
+	html, _ := os.ReadFile(filepath.Join(dir, "brief.html"))
+	if !bytes.Contains(html, []byte("written by sonnet · ~/.claude-work")) {
+		t.Error("footer must say which Claude account wrote the brief")
+	}
+}

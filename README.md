@@ -1,6 +1,6 @@
 # brief
 
-A daily brief: collects what's waiting on you (GitHub, calendar, Jira), asks Claude to pick what
+A daily brief: collects what's waiting on you (GitHub, Jira; calendar planned), asks Claude to pick what
 matters, and writes one calm HTML page for the day.
 
 ```
@@ -13,13 +13,13 @@ brief collect → raw.json → brief think → brief.json → brief render → b
 |---|---|---|
 | Go 1.27+ | build | `brew install go` |
 | [`gh`](https://cli.github.com) | GitHub source (uses gh's login, no token to manage) | `brew install gh && gh auth login` |
-| Calendar.app | Calendar source, read via AppleScript (`osascript`), so no calendar login to manage | add your work calendar to Calendar.app |
+| [`icalBuddy`](https://hasseg.org/icalBuddy/) | Calendar source (**planned**, not wired up yet): reads Calendar.app, so recurring events are already expanded | `brew install ical-buddy` |
 | [`acli`](https://developer.atlassian.com/cloud/acli/) | Jira source (acli owns the login, like gh for GitHub) | `brew tap atlassian/homebrew-acli && brew install acli` |
 | [`claude`](https://docs.claude.com/en/docs/claude-code) | think stage (`claude -p`) | see Claude Code docs, then log in |
 | `gitleaks` | pre-commit secret scan | `brew install gitleaks` |
 
-macOS only: the first calendar read asks to let your terminal control Calendar.app
-(**System Settings → Privacy & Security → Automation**). Allow it.
+macOS only: Calendar access is granted per app. `icalBuddy calendars` must list your calendars from
+the terminal (or launchd job) that runs `brief`; some terminals can't request the permission yet.
 
 ## Connecting accounts
 

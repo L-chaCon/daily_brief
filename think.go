@@ -285,6 +285,7 @@ func claudeThinker(env Env, dir string) Thinker {
 		if d := env.Config.ClaudeConfigDir; d != "" {
 			cmd.Env = append(os.Environ(), "CLAUDE_CONFIG_DIR="+expandHome(d))
 		}
+		_ = writeJSONFile(filepath.Join(dir, "think.json"), thinkMeta{Account: claudeAccount(env), Model: model})
 		var stderr bytes.Buffer
 		cmd.Stderr = &stderr
 		out, err := cmd.Output()
@@ -303,6 +304,24 @@ func claudeThinker(env Env, dir string) Thinker {
 		}
 		return parseEnvelope(out)
 	}
+}
+
+// thinkMeta records how the brief was written, so the page can show it. A brief written by the
+// wrong Claude account must be visible, not silent.
+type thinkMeta struct {
+	Account string `json:"account"` // the Claude config dir used, e.g. "~/.claude-work"
+	Model   string `json:"model"`
+}
+
+// claudeAccount is the config dir claude will use: config wins, then the inherited env, then claude's default.
+func claudeAccount(env Env) string {
+	d := cmp.Or(env.Config.ClaudeConfigDir, os.Getenv("CLAUDE_CONFIG_DIR"), "~/.claude")
+	if home, err := os.UserHomeDir(); err == nil {
+		if rest, ok := strings.CutPrefix(d, home+"/"); ok {
+			return "~/" + rest
+		}
+	}
+	return d
 }
 
 func expandHome(p string) string {
@@ -331,8 +350,9 @@ func thinkDir(ctx context.Context, env Env, dir string, llm Thinker, dryRun bool
 	if dryRun {
 		return nil
 	}
-	os.Remove(filepath.Join(dir, "brief.json"))
-	os.Remove(filepath.Join(dir, "think.error.txt"))
+	for _, f := range []string{"brief.json", "think.error.txt", "think.json"} {
+		os.Remove(filepath.Join(dir, f))
+	}
 	b, err := think(ctx, raw, env.Config, llm)
 	if err != nil {
 		_ = os.WriteFile(filepath.Join(dir, "think.error.txt"), []byte(err.Error()+"\n"), 0o644)

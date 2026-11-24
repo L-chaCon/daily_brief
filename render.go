@@ -26,6 +26,7 @@ type Page struct {
 	Degraded    bool
 	DegradedWhy string
 	GeneratedAt string // "08:00"
+	ThinkInfo   string // "sonnet · ~/.claude-work": which model and Claude account wrote the brief
 }
 
 type Card struct {

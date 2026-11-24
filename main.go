@@ -112,7 +112,12 @@ func renderDir(dir string, noThink bool) (string, error) {
 	} else {
 		b, thinkErr = loadBrief(dir, raw)
 	}
-	html, err := renderHTML(join(raw, b, thinkErr))
+	page := join(raw, b, thinkErr)
+	var meta thinkMeta
+	if b != nil && readJSON(filepath.Join(dir, "think.json"), &meta) == nil {
+		page.ThinkInfo = meta.Model + " · " + meta.Account
+	}
+	html, err := renderHTML(page)
 	if err != nil {
 		return "", err
 	}
