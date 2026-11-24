@@ -11,6 +11,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"slices"
 	"strings"
 	"time"
@@ -140,6 +141,10 @@ func buildPrompt(raw Raw, cfg Config) (system, user string, err error) {
 	return system, user, nil
 }
 
+// urlRe finds links in free text (PR and ticket bodies). They're replaced before the prompt is
+// built: the model can't copy a URL it never saw (V8).
+var urlRe = regexp.MustCompile(`(?i)\b(?:https?|ftp)://\S+`)
+
 func priority(kind string) int {
 	if p, ok := kindPriority[kind]; ok {
 		return p
@@ -149,7 +154,7 @@ func priority(kind string) int {
 
 func toPromptItem(it Item, day time.Time, loc *time.Location) promptItem {
 	p := promptItem{ID: it.ID, Source: it.Source, Kind: it.Kind, Title: it.Title, Who: it.Who, Facts: it.Facts,
-		Body: truncate(it.Body, maxPromptBody)}
+		Body: truncate(urlRe.ReplaceAllString(it.Body, "[link]"), maxPromptBody)}
 	if it.Source == "calendar" {
 		w := it.When.In(loc)
 		p.Day = "today"

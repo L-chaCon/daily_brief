@@ -12,10 +12,12 @@ import (
 type source struct {
 	name    string
 	collect func(ctx context.Context, env Env) ([]Item, error)
+	timeout time.Duration // 0 = sourceTimeout
 }
 
 var sources = []source{
-	{"github", collectGitHub},
+	{"github", collectGitHub, 0},
+	{"jira", collectJira, 60 * time.Second}, // one acli call per issue
 }
 
 const sourceTimeout = 20 * time.Second
@@ -69,12 +71,13 @@ func runOne(ctx context.Context, env Env, s source) (items []Item, st runResult)
 			items, st.OK, st.Error = nil, false, fmt.Sprintf("%s: panic: %v (a bug in the collector)", s.name, r)
 		}
 	}()
-	ctx, cancel := context.WithTimeout(ctx, sourceTimeout)
+	timeout := cmp.Or(s.timeout, sourceTimeout)
+	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 	got, err := s.collect(ctx, env)
 	if err != nil {
 		if ctx.Err() == context.DeadlineExceeded {
-			err = fmt.Errorf("%s: timeout after %s", s.name, sourceTimeout)
+			err = fmt.Errorf("%s: timeout after %s", s.name, timeout)
 		}
 		st.Error = err.Error()
 		return nil, st

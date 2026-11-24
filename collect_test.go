@@ -2,10 +2,13 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"os/exec"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 )
@@ -115,10 +118,10 @@ func TestCollect(t *testing.T) {
 		}, nil
 	}
 	table := []source{
-		{"a", func(context.Context, Env) ([]Item, error) { panic("boom") }},
-		{"b", good},
-		{"c", func(context.Context, Env) ([]Item, error) { return nil, errors.New("c: 401. Run: brief connect c") }},
-		{"off", good},
+		{"a", func(context.Context, Env) ([]Item, error) { panic("boom") }, 0},
+		{"b", good, 0},
+		{"c", func(context.Context, Env) ([]Item, error) { return nil, errors.New("c: 401. Run: brief connect c") }, 0},
+		{"off", good, 0},
 	}
 	env.Config.Disabled = []string{"off"}
 	raw := collectAll(context.Background(), env, civilDate{2026, 10, 14}, table)
@@ -141,5 +144,100 @@ func TestCollect(t *testing.T) {
 	}
 	if raw.Timezone != "Europe/London" || raw.Date.String() != "2026-10-14" {
 		t.Errorf("header = %q %s", raw.Timezone, raw.Date)
+	}
+}
+
+func TestParseJira(t *testing.T) {
+	env := testEnv(t)
+	b1, _ := os.ReadFile("testdata/jira/ops-1452.json")
+	b2, _ := os.ReadFile("testdata/jira/ops-1460.json")
+	items, err := parseJira(jiraFetched{Site: "acme.atlassian.net", Issues: []jiraRawIssue{
+		{"issue_assigned", b1}, {"issue_watching_updated", b2},
+	}}, env)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(items) != 2 {
+		t.Fatalf("got %d items", len(items))
+	}
+	for _, it := range items {
+		if err := it.Validate(); err != nil {
+			t.Error(err)
+		}
+	}
+	a := items[0]
+	if a.ID != "jira:issue:OPS-1452" || a.Kind != "issue_assigned" || a.URL != "https://acme.atlassian.net/browse/OPS-1452" {
+		t.Errorf("item = %+v", a)
+	}
+	if a.Title != "OPS-1452 Delivery settings page shows the wrong cut-off time" {
+		t.Errorf("title = %q (the key goes in the title: it's how people talk about tickets)", a.Title)
+	}
+	if got := strings.Join(a.Facts, "|"); got != "status: In Progress|type: Bug|project: OPS|priority: High|updated: today" {
+		t.Errorf("facts = %s", got)
+	}
+	if _, off := a.When.Zone(); off != 3600 || a.When.Hour() != 17 {
+		t.Errorf("When = %v, want 17:40 BST (Jira's +0000 converted to env.Loc)", a.When)
+	}
+	if strings.Join(a.Who, ",") != "Me Example,Riley Example" {
+		t.Errorf("who = %v", a.Who)
+	}
+	b := items[1]
+	if b.Body != "" || len(b.Who) != 1 || strings.Contains(strings.Join(b.Facts, "|"), "priority") {
+		t.Errorf("nulls should mean absent, got %+v", b)
+	}
+}
+
+func TestADFText(t *testing.T) {
+	b, _ := os.ReadFile("testdata/jira/ops-1452.json")
+	var is jiraIssue
+	if err := json.Unmarshal(b, &is); err != nil {
+		t.Fatal(err)
+	}
+	want := "Steps\nOpen settings, see the cut-off\nRunbook: https://example.com/runbook\nUK only\n"
+	if got := adfText(is.Fields.Description); got != want {
+		t.Errorf("adfText =\n%q\nwant\n%q", got, want)
+	}
+	if adfText(nil) != "" {
+		t.Error("nil description")
+	}
+}
+
+func TestFetchJira(t *testing.T) {
+	env := testEnv(t)
+	b1, _ := os.ReadFile("testdata/jira/ops-1452.json")
+	var calls []string
+	var mu sync.Mutex
+	env.Run = func(_ context.Context, name string, args ...string) ([]byte, error) {
+		mu.Lock()
+		calls = append(calls, strings.Join(args[:min(3, len(args))], " "))
+		mu.Unlock()
+		switch {
+		case args[1] == "auth":
+			return []byte("✓ Authenticated\n  Site: acme.atlassian.net\n  Authentication Type: oauth\n"), nil
+		case args[2] == "search" && strings.Contains(args[4], "assignee = currentUser()"):
+			return []byte(`[{"key":"OPS-1452"}]`), nil
+		case args[2] == "search":
+			return []byte(`[{"key":"OPS-1452"}]`), nil // watched AND assigned: assigned wins, no duplicate view
+		case args[2] == "view":
+			return b1, nil
+		}
+		return nil, fmt.Errorf("unexpected %v", args)
+	}
+	f, err := fetchJira(context.Background(), env)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if f.Site != "acme.atlassian.net" || len(f.Issues) != 1 || f.Issues[0].Kind != "issue_assigned" {
+		t.Errorf("fetched = site %q, %d issues", f.Site, len(f.Issues))
+	}
+	if len(calls) != 4 {
+		t.Errorf("calls = %v, want auth + 2 searches + 1 view", calls)
+	}
+
+	env.Run = func(context.Context, string, ...string) ([]byte, error) {
+		return nil, &exec.Error{Name: "acli", Err: exec.ErrNotFound}
+	}
+	if _, err := fetchJira(context.Background(), env); err == nil || !strings.Contains(err.Error(), "brew install acli") {
+		t.Errorf("want install hint, got %v", err)
 	}
 }

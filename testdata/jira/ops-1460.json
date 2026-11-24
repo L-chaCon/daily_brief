@@ -1,0 +1,14 @@
+{
+  "key": "OPS-1460",
+  "fields": {
+    "summary": "Label printer retries",
+    "updated": "2026-10-14T06:10:00.000+0000",
+    "status": { "name": "To Do", "statusCategory": { "key": "new" } },
+    "priority": null,
+    "project": { "key": "OPS" },
+    "issuetype": { "name": "Task" },
+    "reporter": { "displayName": "Jo Example" },
+    "assignee": null,
+    "description": null
+  }
+}

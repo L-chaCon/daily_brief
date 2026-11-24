@@ -1,0 +1,29 @@
+{
+  "key": "OPS-1452",
+  "self": "https://api.example.com/rest/api/3/issue/10452",
+  "fields": {
+    "summary": "Delivery settings page shows the wrong cut-off time",
+    "updated": "2026-10-13T16:40:00.000+0000",
+    "status": { "name": "In Progress", "statusCategory": { "key": "indeterminate" } },
+    "priority": { "name": "High" },
+    "project": { "key": "OPS" },
+    "issuetype": { "name": "Bug" },
+    "reporter": { "displayName": "Riley Example" },
+    "assignee": { "displayName": "Me Example" },
+    "description": {
+      "type": "doc",
+      "content": [
+        { "type": "heading", "content": [ { "type": "text", "text": "Steps" } ] },
+        { "type": "paragraph", "content": [
+          { "type": "text", "text": "Open settings, see " },
+          { "type": "text", "text": "the cut-off", "marks": [ { "type": "strong" } ] },
+          { "type": "hardBreak" },
+          { "type": "text", "text": "Runbook: https://example.com/runbook" }
+        ] },
+        { "type": "bulletList", "content": [
+          { "type": "listItem", "content": [ { "type": "paragraph", "content": [ { "type": "text", "text": "UK only" } ] } ] }
+        ] }
+      ]
+    }
+  }
+}

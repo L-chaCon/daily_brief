@@ -190,3 +190,15 @@ func TestSchemaMatchesStructs(t *testing.T) {
 	check("ScheduleNote", reflect.TypeFor[ScheduleNote](), schema.Properties["schedule_notes"].Items.Required)
 	check("Reading", reflect.TypeFor[Reading](), schema.Properties["reading"].Items.Required)
 }
+
+func TestPromptStripsLinksFromBodies(t *testing.T) {
+	raw, _ := loadBasic(t)
+	raw.Items[5].Body = "see https://example.com/x and http://y.example"
+	_, user, err := buildPrompt(raw, Config{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(user, "http") || !strings.Contains(user, "see [link] and [link]") {
+		t.Errorf("links must not reach the model")
+	}
+}
