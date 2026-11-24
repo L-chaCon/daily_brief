@@ -35,7 +35,6 @@ claude                             # think stage: log in once with /login
 ## Installation
 
 ```bash
-git config core.hooksPath scripts    # pre-commit: gitleaks + scripts/forbidden.txt
 go build -o brief .
 ```
 
