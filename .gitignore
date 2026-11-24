@@ -1,4 +1,5 @@
 # Planning documents live only on this machine.
+.pi/
 docs/
 
 # Real Dia brief: contains work data (company URLs, Slack ids). Use sanitized fixtures instead.

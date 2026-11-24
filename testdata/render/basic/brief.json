@@ -1,0 +1,48 @@
+{
+  "schema": 1,
+  "greeting": "A 1:1 at ten, then a clear run until standup at two. Good runway for reviews.",
+  "focus": {
+    "title": "Merge the package-count PR before standup",
+    "body": "It has both approvals and passing checks. Merging it closes out OPS-1450 and gives you something concrete to report at 14:00.",
+    "item_ids": [
+      "github:pr:acme/ops-app#210"
+    ],
+    "prompt": "Summarize what PR acme/ops-app#210 changes and draft a 2-line standup update about it."
+  },
+  "todos": [
+    {
+      "item_id": "github:pr:acme/ops-app#210",
+      "label": "Fulfilment",
+      "title": "Merge your approved package-count PR",
+      "body": "Two approvals, checks green, waiting only on you."
+    },
+    {
+      "item_id": "github:pr:acme/ops-app#215",
+      "label": "Fulfilment",
+      "title": "Review the label-printing retry",
+      "body": "Small diff, requested this morning; Jo is blocked on it."
+    }
+  ],
+  "updates": [
+    {
+      "item_ids": [
+        "jira:issue:OPS-1452"
+      ],
+      "title": "Delivery cut-off bug is now in progress",
+      "body": "Riley picked it up last night and marked it high priority. Worth a look if it touches the packing flow."
+    }
+  ],
+  "schedule_notes": [
+    {
+      "item_id": "calendar:event:abc123@2026-10-14T14:00:00+01:00",
+      "note": "Mention #210 is merged (or why not).",
+      "prep_prompt": "Draft a 3-bullet standup update: what I merged, what I am reviewing, what is blocked."
+    }
+  ],
+  "reading": [
+    {
+      "item_id": "feed:entry:9c1e0b7a44d2",
+      "why": "Directly relevant to how you are running coding agents on this project."
+    }
+  ]
+}

@@ -1,0 +1,143 @@
+{
+  "schema": 1,
+  "date": "2026-10-14",
+  "generated_at": "2026-10-14T08:00:03+01:00",
+  "timezone": "Europe/London",
+  "sources": [
+    {
+      "name": "github",
+      "ok": true,
+      "count": 2,
+      "took_ms": 812
+    },
+    {
+      "name": "calendar",
+      "ok": true,
+      "count": 3,
+      "took_ms": 95
+    },
+    {
+      "name": "jira",
+      "ok": true,
+      "count": 1,
+      "took_ms": 340
+    },
+    {
+      "name": "mail",
+      "ok": false,
+      "error": "mail: Mail.app is not running. Run: brief doctor mail",
+      "count": 0,
+      "took_ms": 2004
+    },
+    {
+      "name": "feed",
+      "ok": true,
+      "count": 1,
+      "took_ms": 230
+    }
+  ],
+  "items": [
+    {
+      "id": "calendar:event:k3j9@2026-10-14T10:00:00+01:00",
+      "source": "calendar",
+      "kind": "event",
+      "title": "1:1 with Pat",
+      "who": [
+        "Pat Example"
+      ],
+      "when": "2026-10-14T10:00:00+01:00",
+      "end": "2026-10-14T10:30:00+01:00",
+      "facts": [
+        "recurring: weekly"
+      ]
+    },
+    {
+      "id": "calendar:event:abc123@2026-10-14T14:00:00+01:00",
+      "source": "calendar",
+      "kind": "event",
+      "title": "Team Daily Standup",
+      "who": [
+        "Sam Example",
+        "Pat Example"
+      ],
+      "when": "2026-10-14T14:00:00+01:00",
+      "end": "2026-10-14T14:15:00+01:00",
+      "facts": [
+        "recurring: daily",
+        "attendees: 7"
+      ]
+    },
+    {
+      "id": "calendar:event:p1an@2026-10-15T09:30:00+01:00",
+      "source": "calendar",
+      "kind": "event",
+      "title": "Sprint planning",
+      "who": [
+        "Sam Example"
+      ],
+      "when": "2026-10-15T09:30:00+01:00",
+      "end": "2026-10-15T10:30:00+01:00"
+    },
+    {
+      "id": "feed:entry:9c1e0b7a44d2",
+      "source": "feed",
+      "kind": "article",
+      "title": "Designing agentic loops",
+      "url": "https://example.com/blog/agentic-loops",
+      "who": [
+        "Simon Example"
+      ],
+      "when": "2026-10-13T19:05:00Z",
+      "body": "Notes on giving coding agents a clear goal, a tight feedback loop, and a sandbox."
+    },
+    {
+      "id": "github:pr:acme/ops-app#210",
+      "source": "github",
+      "kind": "pr_mine_ready",
+      "title": "Package count on packing screen",
+      "url": "https://github.com/acme/ops-app/pull/210",
+      "who": [
+        "Alex Example",
+        "Sam Example"
+      ],
+      "when": "2026-10-13T16:20:00+01:00",
+      "facts": [
+        "approvals: 2/2",
+        "checks: passing",
+        "mergeable: yes",
+        "jira: OPS-1450"
+      ]
+    },
+    {
+      "id": "github:pr:acme/ops-app#215",
+      "source": "github",
+      "kind": "pr_review_requested",
+      "title": "Retry label printing on timeout",
+      "url": "https://github.com/acme/ops-app/pull/215",
+      "who": [
+        "Jo Example"
+      ],
+      "when": "2026-10-14T07:45:00+01:00",
+      "body": "Adds a bounded retry (3 attempts, 2s backoff) around the label printer call.",
+      "facts": [
+        "waiting: 0d",
+        "checks: passing"
+      ]
+    },
+    {
+      "id": "jira:issue:OPS-1452",
+      "source": "jira",
+      "kind": "issue_watching_updated",
+      "title": "Delivery settings page shows the wrong cut-off time",
+      "url": "https://acme.atlassian.net/browse/OPS-1452",
+      "who": [
+        "Riley Example"
+      ],
+      "when": "2026-10-13T17:40:00+01:00",
+      "facts": [
+        "status: In Progress",
+        "priority: High"
+      ]
+    }
+  ]
+}
