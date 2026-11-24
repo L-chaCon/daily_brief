@@ -1,0 +1,85 @@
+{
+  "data": {
+    "review": {
+      "nodes": [
+        {
+          "number": 215,
+          "title": "Retry label printing on timeout",
+          "url": "https://github.com/acme/ops-app/pull/215",
+          "updatedAt": "2026-10-14T06:45:00Z",
+          "isDraft": false,
+          "reviewDecision": "REVIEW_REQUIRED",
+          "mergeable": "MERGEABLE",
+          "headRefName": "ops-1460-label-retry",
+          "body": "<!-- PR template: describe your change -->\r\nAdds a bounded retry   around the printer call.\r\n\r\n\r\n\r\nSee notes.",
+          "author": { "login": "jo-example" },
+          "repository": { "nameWithOwner": "acme/ops-app" },
+          "reviews": { "totalCount": 0, "nodes": [] },
+          "commits": { "nodes": [ { "commit": { "statusCheckRollup": { "state": "SUCCESS" } } } ] }
+        },
+        {
+          "number": 220,
+          "title": "WIP: experiment with new packer",
+          "url": "https://github.com/acme/ops-app/pull/220",
+          "updatedAt": "2026-10-13T10:00:00Z",
+          "isDraft": true,
+          "reviewDecision": null,
+          "mergeable": "UNKNOWN",
+          "headRefName": "wip",
+          "body": "",
+          "author": { "login": "alex-example" },
+          "repository": { "nameWithOwner": "acme/ops-app" },
+          "reviews": { "totalCount": 0, "nodes": [] },
+          "commits": { "nodes": [] }
+        }
+      ]
+    },
+    "mine": {
+      "nodes": [
+        {
+          "number": 210,
+          "title": "OPS-1450 Package count on packing screen",
+          "url": "https://github.com/acme/ops-app/pull/210",
+          "updatedAt": "2026-10-11T15:20:00Z",
+          "isDraft": false,
+          "reviewDecision": "APPROVED",
+          "mergeable": "MERGEABLE",
+          "headRefName": "package-count",
+          "body": "Shows the package count.",
+          "author": { "login": "me-example" },
+          "repository": { "nameWithOwner": "acme/ops-app" },
+          "reviews": { "totalCount": 2, "nodes": [ { "author": { "login": "alex-example" } }, { "author": { "login": "sam-example" } } ] },
+          "commits": { "nodes": [ { "commit": { "statusCheckRollup": { "state": "SUCCESS" } } } ] }
+        },
+        {
+          "number": 12,
+          "title": "Bump the base image",
+          "url": "https://github.com/acme/infra/pull/12",
+          "updatedAt": "2026-10-13T09:00:00Z",
+          "isDraft": false,
+          "reviewDecision": "CHANGES_REQUESTED",
+          "mergeable": "CONFLICTING",
+          "headRefName": "bump",
+          "body": "",
+          "author": { "login": "me-example" },
+          "repository": { "nameWithOwner": "acme/infra" },
+          "reviews": { "totalCount": 0, "nodes": [] },
+          "commits": { "nodes": [ { "commit": { "statusCheckRollup": null } } ] }
+        }
+      ]
+    },
+    "issues": {
+      "nodes": [
+        {
+          "number": 7,
+          "title": "Flaky test in the packer suite",
+          "url": "https://github.com/acme/ops-app/issues/7",
+          "updatedAt": "2026-10-14T07:00:00Z",
+          "body": "Fails about 1 in 20 runs.",
+          "author": { "login": "sam-example" },
+          "repository": { "nameWithOwner": "acme/ops-app" }
+        }
+      ]
+    }
+  }
+}

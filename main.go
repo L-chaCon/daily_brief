@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -8,7 +9,9 @@ import (
 	"io"
 	"io/fs"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"time"
 )
 
 const usage = `usage: brief <command> [flags]
@@ -38,7 +41,21 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return 0
 	case "render":
 		return cmdRender(rest, stdout, stderr)
-	case "collect", "think", "run", "doctor", "connect", "open":
+	case "collect", "open", "run":
+		env, err := newEnv(time.Now())
+		if err != nil {
+			fmt.Fprintf(stderr, "%s: %v\n", cmd, err)
+			return 1
+		}
+		switch cmd {
+		case "collect":
+			return cmdCollect(env, rest, stdout, stderr)
+		case "open":
+			return cmdOpen(env, rest, stdout, stderr)
+		default:
+			return cmdRun(env, rest, stdout, stderr)
+		}
+	case "think", "doctor", "connect":
 		fmt.Fprintf(stderr, "%s: not implemented\n", cmd)
 		return 2
 	default:
@@ -52,14 +69,24 @@ func run(args []string, stdout, stderr io.Writer) int {
 func cmdRender(args []string, stdout, stderr io.Writer) int {
 	fl := flag.NewFlagSet("render", flag.ContinueOnError)
 	fl.SetOutput(stderr)
-	dir := fl.String("dir", "", "run folder containing raw.json (and brief.json)")
+	dir := fl.String("dir", "", "run folder containing raw.json (and brief.json); overrides --date")
+	date := fl.String("date", "today", "today, yesterday, or YYYY-MM-DD")
 	noThink := fl.Bool("no-think", false, "ignore brief.json and render the degraded page")
 	if err := fl.Parse(args); err != nil {
 		return 2
 	}
 	if *dir == "" {
-		fmt.Fprintln(stderr, "render: --dir is required")
-		return 2
+		env, err := newEnv(time.Now())
+		if err != nil {
+			fmt.Fprintf(stderr, "render: %v\n", err)
+			return 1
+		}
+		d, err := env.parseDateFlag(*date)
+		if err != nil {
+			fmt.Fprintf(stderr, "render: %v\n", err)
+			return 2
+		}
+		*dir = env.runDir(d)
 	}
 	path, err := renderDir(*dir, *noThink)
 	if err != nil {
@@ -118,10 +145,81 @@ func readJSON(path string, v any) error {
 	return nil
 }
 
-func writeJSON(path string, v any) error {
-	b, err := json.MarshalIndent(v, "", "  ")
-	if err != nil {
-		return err
+// dateFlag parses the common --date flag for commands that only need a date.
+func dateFlag(env Env, name string, args []string, stderr io.Writer) (civilDate, bool) {
+	fl := flag.NewFlagSet(name, flag.ContinueOnError)
+	fl.SetOutput(stderr)
+	date := fl.String("date", "today", "today, yesterday, or YYYY-MM-DD")
+	if err := fl.Parse(args); err != nil {
+		return civilDate{}, false
 	}
-	return os.WriteFile(path, append(b, '\n'), 0o644)
+	d, err := env.parseDateFlag(*date)
+	if err != nil {
+		fmt.Fprintf(stderr, "%s: %v\n", name, err)
+		return civilDate{}, false
+	}
+	return d, true
+}
+
+// cmdCollect writes <run dir>/raw.json. Exit 0 even if sources failed: their status is in the file.
+func cmdCollect(env Env, args []string, stdout, stderr io.Writer) int {
+	d, ok := dateFlag(env, "collect", args, stderr)
+	if !ok {
+		return 2
+	}
+	path, err := collectTo(env, d, stderr)
+	if err != nil {
+		fmt.Fprintf(stderr, "collect: %v\n", err)
+		return 1
+	}
+	fmt.Fprintln(stdout, path)
+	return 0
+}
+
+func collectTo(env Env, d civilDate, stderr io.Writer) (string, error) {
+	raw := collectAll(context.Background(), env, d, sources)
+	for _, s := range raw.Sources {
+		mark := "✓"
+		if !s.OK {
+			mark = "✗"
+		}
+		fmt.Fprintf(stderr, "%s %-10s %3d items %5dms %s\n", mark, s.Name, s.Count, s.TookMS, s.Error)
+	}
+	path := filepath.Join(env.runDir(d), "raw.json")
+	return path, writeJSONFile(path, raw)
+}
+
+func cmdOpen(env Env, args []string, stdout, stderr io.Writer) int {
+	d, ok := dateFlag(env, "open", args, stderr)
+	if !ok {
+		return 2
+	}
+	path := filepath.Join(env.runDir(d), "brief.html")
+	if _, err := os.Stat(path); err != nil {
+		fmt.Fprintf(stderr, "open: no brief for %s. Run: brief run --date %s\n", d, d)
+		return 1
+	}
+	if err := exec.Command("open", path).Run(); err != nil {
+		fmt.Fprintf(stderr, "open: %v\n", err)
+		return 1
+	}
+	fmt.Fprintln(stdout, path)
+	return 0
+}
+
+// cmdRun is the whole pipeline for one day: collect, (think), render, open.
+func cmdRun(env Env, args []string, stdout, stderr io.Writer) int {
+	d, ok := dateFlag(env, "run", args, stderr)
+	if !ok {
+		return 2
+	}
+	if _, err := collectTo(env, d, stderr); err != nil {
+		fmt.Fprintf(stderr, "run: collect: %v\n", err)
+		return 1
+	}
+	if _, err := renderDir(env.runDir(d), false); err != nil {
+		fmt.Fprintf(stderr, "run: render: %v\n", err)
+		return 1
+	}
+	return cmdOpen(env, []string{"--date", d.String()}, stdout, stderr)
 }
