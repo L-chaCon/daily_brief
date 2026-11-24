@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wednesday Brief · 2026-10-14</title>
+<style>:root {
+  --bg: #fbfaf7; --fg: #1d1d1b; --muted: #6b6a66; --line: #e6e3dc;
+  --accent: #2f5d50; --warn-bg: #fff3e0; --warn: #9a4a00; --fail: #b3261e; --ok: #2f5d50;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #161615; --fg: #ecebe7; --muted: #9b9a95; --line: #2c2b29;
+    --accent: #8fc7b3; --warn-bg: #3a2a14; --warn: #f0b46a; --fail: #f2867e; --ok: #8fc7b3;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--fg);
+  font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+}
+main { max-width: 680px; margin: 0 auto; padding: 48px 20px 80px; }
+header { margin-bottom: 32px; }
+h1 { font-size: 2rem; line-height: 1.2; margin: 4px 0 12px; }
+h2 { font-size: .8rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 40px 0 12px; }
+h3 { font-size: 1.05rem; margin: 0; display: inline; }
+.date, .meta, footer, .empty { color: var(--muted); font-size: .9rem; }
+.greeting { font-size: 1.15rem; }
+.banner { background: var(--warn-bg); color: var(--warn); padding: 12px 16px; border-radius: 8px; }
+.card { border-top: 1px solid var(--line); padding: 14px 0; }
+.card p { margin: 6px 0 0 28px; }
+.focus .card { border: 1px solid var(--line); border-radius: 10px; padding: 16px; }
+.todo { display: flex; gap: 10px; align-items: baseline; cursor: pointer; }
+.todo input { flex: none; width: 18px; height: 18px; accent-color: var(--accent); }
+.label { font-size: .75rem; border: 1px solid var(--line); border-radius: 999px; padding: 1px 8px; color: var(--muted); }
+.card.done h3, .card.done p { opacity: .45; text-decoration: line-through; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+button.copy {
+  margin: 10px 0 0 28px; font: inherit; font-size: .9rem; color: var(--accent);
+  background: none; border: 1px solid var(--accent); border-radius: 999px; padding: 3px 12px; cursor: pointer;
+}
+.day dl { margin: 0; display: grid; grid-template-columns: 110px 1fr; }
+.day dt { color: var(--muted); grid-column: 1; padding: 8px 0; }
+.day dd { grid-column: 2; margin: 0; padding: 8px 0; border-top: 1px solid var(--line); }
+.day dt + dd { border-top: none; }
+.time { font-variant-numeric: tabular-nums; color: var(--muted); margin-right: 10px; }
+.note { margin: 4px 0 0; }
+.day button.copy { margin-left: 0; }
+.day h3 { display: block; font-size: .9rem; color: var(--muted); margin: 20px 0 6px; }
+footer { margin-top: 56px; border-top: 1px solid var(--line); padding-top: 16px; }
+footer .ok { color: var(--ok); margin-right: 10px; }
+footer .fail { color: var(--fail); margin-right: 10px; }
+code { font-size: .9em; }
+</style>
+</head>
+<body data-date="2026-10-14">
+<main>
+<header>
+  <p class="date">Wednesday · 2026-10-14</p>
+  <h1>The Wednesday Brief</h1>
+  <p class="greeting">2 meetings today, 3 work items open.</p>
+</header>
+
+<p class="banner" role="alert">⚠ Brief is in degraded mode: think skipped (--no-think). Raw items below. Re-run: <code>brief think --date 2026-10-14</code></p>
+
+
+
+<section>
+  <h2>To-do</h2>
+  
+<article class="card" data-id="github:pr:acme/ops-app#210">
+  <label class="todo">
+    <input type="checkbox" data-check="github:pr:acme/ops-app#210">
+    <span class="label">GitHub</span>
+    <h3>Package count on packing screen</h3>
+  </label>
+  
+  
+  <p class="meta">
+    <a href="https://github.com/acme/ops-app/pull/210" target="_blank" rel="noopener">GitHub ↗</a> 
+    · Alex Example, Sam Example
+  </p>
+  
+  
+</article>
+
+<article class="card" data-id="github:pr:acme/ops-app#215">
+  <label class="todo">
+    <input type="checkbox" data-check="github:pr:acme/ops-app#215">
+    <span class="label">GitHub</span>
+    <h3>Retry label printing on timeout</h3>
+  </label>
+  <p>Adds a bounded retry (3 attempts, 2s backoff) around the label printer call.</p>
+  
+  <p class="meta">
+    <a href="https://github.com/acme/ops-app/pull/215" target="_blank" rel="noopener">GitHub ↗</a> 
+    · Jo Example
+  </p>
+  
+  
+</article>
+
+</section>
+
+
+<section class="day">
+  <h2>Your day</h2>
+  
+  
+  <dl>
+  
+    <dt>Morning</dt>
+    
+<dd class="event" data-id="calendar:event:k3j9@2026-10-14T10:00:00&#43;01:00">
+  <span class="time">10:00–10:30</span>
+  <span class="title">1:1 with Pat</span>
+  
+  
+</dd>
+
+  
+    <dt>Afternoon</dt>
+    
+<dd class="event" data-id="calendar:event:abc123@2026-10-14T14:00:00&#43;01:00">
+  <span class="time">14:00–14:15</span>
+  <span class="title">Team Daily Standup</span>
+  
+  
+</dd>
+
+  
+    <dt>Evening</dt>
+    <dd class="empty">—</dd>
+  
+  </dl>
+  
+  
+  <h3>Tomorrow</h3>
+  <dl>
+<dd class="event" data-id="calendar:event:p1an@2026-10-15T09:30:00&#43;01:00">
+  <span class="time">09:30–10:30</span>
+  <span class="title">Sprint planning</span>
+  
+  
+</dd>
+</dl>
+  
+</section>
+
+<section>
+  <h2>Worth reading</h2>
+  
+<article class="card" data-id="feed:entry:9c1e0b7a44d2">
+  <label class="todo">
+    <input type="checkbox" data-check="feed:entry:9c1e0b7a44d2">
+    
+    <h3>Designing agentic loops</h3>
+  </label>
+  <p>Notes on giving coding agents a clear goal, a tight feedback loop, and a sandbox.</p>
+  
+  <p class="meta">
+    <a href="https://example.com/blog/agentic-loops" target="_blank" rel="noopener">Feed ↗</a> 
+    · Simon Example
+  </p>
+  
+  
+</article>
+
+</section>
+
+<footer>
+  <p class="sources">Sources:
+  
+    <span class="ok">github ✓ 2</span>
+    
+  
+    <span class="ok">calendar ✓ 3</span>
+    
+  
+    <span class="ok">jira ✓ 1</span>
+    
+  
+    <span class="fail" title="mail: Mail.app is not running. Run: brief doctor mail">mail ✗</span>
+  
+    <span class="ok">feed ✓ 1</span>
+    
+  
+  </p>
+  <p class="fail">mail: Mail.app is not running. Run: brief doctor mail</p>
+  <p>Generated 08:00</p>
+</footer>
+</main>
+<script>(() => {
+  
+  const date = document.body.dataset.date;
+  const key = (id) => `brief:${date}:${id}`;
+  for (const box of document.querySelectorAll("input[data-check]")) {
+    const card = box.closest(".card");
+    const paint = () => card && card.classList.toggle("done", box.checked);
+    box.checked = localStorage.getItem(key(box.dataset.check)) === "1";
+    paint();
+    box.addEventListener("change", () => {
+      if (box.checked) localStorage.setItem(key(box.dataset.check), "1");
+      else localStorage.removeItem(key(box.dataset.check));
+      paint();
+    });
+  }
+
+  
+  for (const btn of document.querySelectorAll("button[data-copy]")) {
+    const label = btn.textContent;
+    btn.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(btn.dataset.copy);
+        btn.textContent = "Copied ✓";
+      } catch {
+        btn.textContent = "Copy failed";
+      }
+      setTimeout(() => (btn.textContent = label), 2000);
+    });
+  }
+
+  
+  const cards = [...document.querySelectorAll(".card")];
+  let i = -1;
+  const focus = (n) => {
+    if (!cards.length) return;
+    i = Math.max(0, Math.min(cards.length - 1, n));
+    cards[i].scrollIntoView({ block: "center", behavior: "smooth" });
+    cards.forEach((c, j) => (c.style.outline = j === i ? "2px solid var(--accent)" : ""));
+  };
+  document.addEventListener("keydown", (e) => {
+    if (e.metaKey || e.ctrlKey || e.altKey || e.target.matches("input, textarea")) return;
+    if (e.key === "j") focus(i + 1);
+    else if (e.key === "k") focus(i - 1);
+    else if (e.key === "x" && i >= 0) cards[i].querySelector("input[data-check]")?.click();
+  });
+})();
+</script>
+</body>
+</html>
+
+
+
+

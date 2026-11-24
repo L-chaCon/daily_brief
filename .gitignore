@@ -10,3 +10,6 @@ scripts/forbidden.txt
 
 # build output
 /brief
+
+# render output written next to fixtures
+testdata/**/brief.html

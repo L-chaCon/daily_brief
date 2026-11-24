@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{.Weekday}} Brief · {{.Date}}</title>
+<style>{{template "brief.css"}}</style>
+</head>
+<body data-date="{{.Date}}">
+<main>
+<header>
+  <p class="date">{{.Weekday}} · {{.Date}}</p>
+  <h1>The {{.Weekday}} Brief</h1>
+  <p class="greeting">{{.Greeting}}</p>
+</header>
+{{if .Degraded}}
+<p class="banner" role="alert">⚠ Brief is in degraded mode: {{.DegradedWhy}}. Raw items below. Re-run: <code>brief think --date {{.Date}}</code></p>
+{{end}}
+{{with .Focus}}
+<section class="focus">
+  <h2>Focus</h2>
+  {{template "card" .}}
+</section>
+{{end}}
+{{with .Todos}}
+<section>
+  <h2>To-do</h2>
+  {{range .}}{{template "card" .}}{{end}}
+</section>
+{{end}}
+{{with .Updates}}
+<section>
+  <h2>What changed</h2>
+  {{range .}}{{template "card" .}}{{end}}
+</section>
+{{end}}
+<section class="day">
+  <h2>Your day</h2>
+  {{$any := false}}{{range .Schedule}}{{if .Events}}{{$any = true}}{{end}}{{end}}
+  {{if $any}}
+  <dl>
+  {{range .Schedule}}
+    <dt>{{.Name}}</dt>
+    {{range .Events}}{{template "event" .}}{{else}}<dd class="empty">—</dd>{{end}}
+  {{end}}
+  </dl>
+  {{else}}
+  <p class="empty">No meetings today.</p>
+  {{end}}
+  {{with .Tomorrow}}
+  <h3>Tomorrow</h3>
+  <dl>{{range .}}{{template "event" .}}{{end}}</dl>
+  {{end}}
+</section>
+{{with .Reading}}
+<section>
+  <h2>Worth reading</h2>
+  {{range .}}{{template "card" .}}{{end}}
+</section>
+{{end}}
+<footer>
+  <p class="sources">Sources:
+  {{range .Sources}}
+    {{if .OK}}<span class="ok">{{.Name}} ✓ {{.Count}}</span>
+    {{else}}<span class="fail" title="{{.Error}}">{{.Name}} ✗</span>{{end}}
+  {{end}}
+  </p>
+  {{range .Sources}}{{if not .OK}}<p class="fail">{{.Error}}</p>{{end}}{{end}}
+  <p>Generated {{.GeneratedAt}}</p>
+</footer>
+</main>
+<script>{{template "brief.js"}}</script>
+</body>
+</html>
+
+{{define "card"}}
+<article class="card" data-id="{{.ID}}">
+  <label class="todo">
+    <input type="checkbox" data-check="{{.ID}}">
+    {{with .Label}}<span class="label">{{.}}</span>{{end}}
+    <h3>{{.Title}}</h3>
+  </label>
+  {{with .Body}}<p>{{.}}</p>{{end}}
+  {{if or .Links .Who}}
+  <p class="meta">
+    {{range .Links}}<a href="{{.URL}}" target="_blank" rel="noopener">{{.Text}} ↗</a> {{end}}
+    {{with .Who}}· {{join . ", "}}{{end}}
+  </p>
+  {{end}}
+  {{with .Prompt}}<button class="copy" data-copy="{{.}}">Let's do it →</button>{{end}}
+</article>
+{{end}}
+
+{{define "event"}}
+<dd class="event" data-id="{{.ID}}">
+  <span class="time">{{if .AllDay}}all day{{else}}{{.Start}}{{with .End}}–{{.}}{{end}}{{end}}</span>
+  <span class="title">{{.Title}}</span>
+  {{with .Note}}<p class="note">{{.}}</p>{{end}}
+  {{with .PrepPrompt}}<button class="copy" data-copy="{{.}}">Prep me →</button>{{end}}
+</dd>
+{{end}}

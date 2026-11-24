@@ -50,9 +50,18 @@ func TestUsageListsAllCommands(t *testing.T) {
 	}
 }
 
-// Every subcommand exists (as a stub for now) and none of them is "unknown".
+// Every subcommand exists and none of them is "unknown". Implemented commands drop out of the stub list.
+var stubs = []string{"collect", "think", "run", "doctor", "connect", "open"}
+
 func TestAllCommandsAreKnown(t *testing.T) {
 	for _, c := range commands {
+		var stdout, stderr bytes.Buffer
+		run([]string{c}, &stdout, &stderr)
+		if strings.Contains(stderr.String(), "unknown command") {
+			t.Errorf("%s is unknown", c)
+		}
+	}
+	for _, c := range stubs {
 		var stdout, stderr bytes.Buffer
 		code := run([]string{c}, &stdout, &stderr)
 		if code != 2 || !strings.Contains(stderr.String(), c+": not implemented") {
