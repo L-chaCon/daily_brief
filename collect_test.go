@@ -121,13 +121,19 @@ func TestCollect(t *testing.T) {
 		{"a", func(context.Context, Env) ([]Item, error) { panic("boom") }, 0},
 		{"b", good, 0},
 		{"c", func(context.Context, Env) ([]Item, error) { return nil, errors.New("c: 401. Run: brief connect c") }, 0},
+		{"d", func(context.Context, Env) ([]Item, error) { // partial: keeps what it read, reports the rest
+			return []Item{{ID: "d:1", Source: "d", Kind: "k", Title: "ok", When: at}}, errors.New("d: 1 of 2 unreadable")
+		}, 0},
 		{"off", good, 0},
 	}
 	env.Config.Disabled = []string{"off"}
 	raw := collectAll(context.Background(), env, civilDate{2026, 10, 14}, table)
 
-	if len(raw.Sources) != 3 {
-		t.Fatalf("sources = %+v, want a, b, c (off is disabled)", raw.Sources)
+	if len(raw.Sources) != 4 {
+		t.Fatalf("sources = %+v, want a, b, c, d (off is disabled)", raw.Sources)
+	}
+	if d := raw.Sources[3]; !d.OK || d.Count != 1 || !strings.Contains(d.Error, "1 of 2 unreadable") {
+		t.Errorf("partial source = %+v, want ok with its items and the error visible", d)
 	}
 	a, b, c := raw.Sources[0], raw.Sources[1], raw.Sources[2]
 	if a.OK || !strings.Contains(a.Error, "panic: boom") {
@@ -139,7 +145,7 @@ func TestCollect(t *testing.T) {
 	if c.OK || !strings.Contains(c.Error, "brief connect c") {
 		t.Errorf("c = %+v", c)
 	}
-	if len(raw.Items) != 2 || raw.Items[0].ID != "b:1" || raw.Items[1].ID != "b:2" {
+	if len(raw.Items) != 3 || raw.Items[0].ID != "b:1" || raw.Items[1].ID != "b:2" {
 		t.Errorf("items must be deduped, validated and sorted by When: %+v", raw.Items)
 	}
 	if raw.Timezone != "Europe/London" || raw.Date.String() != "2026-10-14" {
@@ -232,6 +238,22 @@ func TestFetchJira(t *testing.T) {
 	}
 	if len(calls) != 4 {
 		t.Errorf("calls = %v, want auth + 2 searches + 1 view", calls)
+	}
+
+	// One unreadable issue doesn't cost the others.
+	base := env.Run
+	env.Run = func(ctx context.Context, name string, args ...string) ([]byte, error) {
+		if args[1] == "workitem" && args[2] == "search" && strings.Contains(args[4], "watcher") {
+			return []byte(`[{"key":"OPS-9"}]`), nil
+		}
+		if args[2] == "view" && args[3] == "OPS-9" {
+			return nil, errors.New("exit status 1: Issue does not exist")
+		}
+		return base(ctx, name, args...)
+	}
+	items, err := collectJira(context.Background(), env)
+	if len(items) != 1 || err == nil || !strings.Contains(err.Error(), "1 of 2 issues unreadable") {
+		t.Errorf("partial failure: %d items, err %v", len(items), err)
 	}
 
 	env.Run = func(context.Context, string, ...string) ([]byte, error) {

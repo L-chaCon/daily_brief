@@ -38,12 +38,12 @@ type jiraRawIssue struct {
 	Body []byte
 }
 
+// collectJira returns the issues it could read, plus an error naming the ones it couldn't:
+// one unreadable ticket must not cost the others (runOne keeps items that come with an error).
 func collectJira(ctx context.Context, env Env) ([]Item, error) {
-	f, err := fetchJira(ctx, env)
-	if err != nil {
-		return nil, err
-	}
-	return parseJira(f, env)
+	f, fetchErr := fetchJira(ctx, env)
+	items, err := parseJira(f, env)
+	return items, errors.Join(fetchErr, err)
 }
 
 func fetchJira(ctx context.Context, env Env) (jiraFetched, error) {
@@ -80,7 +80,7 @@ func fetchJira(ctx context.Context, env Env) (jiraFetched, error) {
 
 	// Views run a few at a time: ~1s each, so 20 sequential views would blow the timeout.
 	// Each goroutine writes only its own slot, so no mutex is needed.
-	f.Issues = make([]jiraRawIssue, len(jobs))
+	issues := make([]jiraRawIssue, len(jobs))
 	errs := make([]error, len(jobs))
 	sem := make(chan struct{}, jiraConcurrency)
 	var wg sync.WaitGroup
@@ -91,22 +91,31 @@ func fetchJira(ctx context.Context, env Env) (jiraFetched, error) {
 			sem <- struct{}{}
 			defer func() { <-sem }()
 			out, err := env.Run(ctx, "acli", "jira", "workitem", "view", j.key, "--fields", jiraViewFields, "--json")
-			f.Issues[i], errs[i] = jiraRawIssue{Kind: j.kind, Body: out}, err
+			issues[i] = jiraRawIssue{Kind: j.kind, Body: out}
+			if err != nil {
+				errs[i] = fmt.Errorf("%s: %w", j.key, err)
+			}
 		}()
 	}
 	wg.Wait()
-	if err := errors.Join(errs...); err != nil {
-		return f, jiraErr(err)
+	failed := 0
+	for i, is := range issues {
+		if errs[i] == nil {
+			f.Issues = append(f.Issues, is)
+		} else {
+			failed++
+		}
+	}
+	if failed > 0 {
+		return f, fmt.Errorf("jira: %d of %d issues unreadable (first: %v)", failed, len(issues), errors.Join(errs...))
 	}
 	return f, nil
 }
 
+// jiraErr adds the install hint; otherwise acli's own first stderr line (via execRun) is the message.
 func jiraErr(err error) error {
-	switch {
-	case errors.Is(err, exec.ErrNotFound):
+	if errors.Is(err, exec.ErrNotFound) {
 		return errors.New("jira: acli not found on PATH. Install: brew tap atlassian/homebrew-acli && brew install acli")
-	case strings.Contains(strings.ToLower(err.Error()), "auth"):
-		return errors.New("jira: acli is not logged in. Run: acli jira auth login --web")
 	}
 	return fmt.Errorf("jira: %w", err)
 }

@@ -42,7 +42,7 @@ func TestBuildPrompt(t *testing.T) {
 func TestBuildPromptPrivacy(t *testing.T) {
 	raw, _ := loadBasic(t)
 	raw.Items[4].Facts = append(raw.Items[4].Facts, "from: sam@example.com") // invalid: email in facts
-	_, user, err := buildPrompt(raw, Config{NeverSend: []string{"jira"}})
+	_, user, err := buildPrompt(raw, Config{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -51,9 +51,6 @@ func TestBuildPromptPrivacy(t *testing.T) {
 	}
 	if !strings.Contains(user, "NOTE: 1 invalid items omitted") {
 		t.Error("dropping must be visible in the prompt")
-	}
-	if strings.Contains(user, "jira:issue") {
-		t.Error("never_send source reached the prompt")
 	}
 }
 

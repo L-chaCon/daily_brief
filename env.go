@@ -33,7 +33,6 @@ type Config struct {
 	// think stage
 	Model           string   `json:"model,omitempty"`             // claude model alias; default "sonnet"
 	Interests       []string `json:"interests,omitempty"`         // for reading picks
-	NeverSend       []string `json:"never_send,omitempty"`        // sources rendered but never sent to the LLM
 	ClaudeConfigDir string   `json:"claude_config_dir,omitempty"` // which Claude account think uses; default: inherited
 }
 

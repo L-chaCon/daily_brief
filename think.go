@@ -30,7 +30,6 @@ type Thinker func(ctx context.Context, system, user string) (json.RawMessage, er
 const (
 	maxPromptChars = 60_000
 	maxWorkItems   = 40
-	maxReading     = 15
 	maxPromptBody  = 400
 	thinkTimeout   = 3 * time.Minute
 )
@@ -67,8 +66,6 @@ func buildPrompt(raw Raw, cfg Config) (system, user string, err error) {
 	invalid := 0
 	for _, it := range raw.Items {
 		switch {
-		case slices.Contains(cfg.NeverSend, it.Source):
-			continue // rendered on the page, never sent to the LLM
 		case it.Validate() != nil:
 			invalid++ // e.g. an email address in facts must not reach the LLM
 		case it.Source == "calendar":
@@ -90,7 +87,6 @@ func buildPrompt(raw Raw, cfg Config) (system, user string, err error) {
 		work = work[:maxWorkItems]
 		notes = append(notes, fmt.Sprintf("NOTE: %d lower-priority work items omitted", n))
 	}
-	reading = pickReading(reading, cfg.Interests)
 	if invalid > 0 {
 		notes = append(notes, fmt.Sprintf("NOTE: %d invalid items omitted", invalid))
 	}
@@ -173,24 +169,6 @@ func toPromptItem(it Item, day time.Time, loc *time.Location) promptItem {
 	return p
 }
 
-// pickReading keeps the reading items that best match the interests (keyword hits in
-// title+body), newest first on ties, at most maxReading.
-func pickReading(items []Item, interests []string) []Item {
-	score := func(it Item) int {
-		text, n := strings.ToLower(it.Title+" "+it.Body), 0
-		for _, k := range interests {
-			if strings.Contains(text, strings.ToLower(k)) {
-				n++
-			}
-		}
-		return n
-	}
-	slices.SortStableFunc(items, func(a, b Item) int {
-		return cmp.Or(cmp.Compare(score(b), score(a)), b.When.Compare(a.When))
-	})
-	return items[:min(len(items), maxReading)]
-}
-
 // think asks once, and retries once with the list of problems if the answer fails validation.
 // CLI errors are not retried: that's a broken setup, not a bad answer.
 func think(ctx context.Context, raw Raw, cfg Config, llm Thinker) (*Brief, error) {
@@ -265,9 +243,15 @@ func parseEnvelope(b []byte) (json.RawMessage, error) {
 }
 
 // claudeThinker runs `claude -p` with no tools and the brief schema. Each raw envelope is saved
-// to <dir>/claude.json (cost, timing, model) for later `jq` over the run folders.
+// (claude.json, then claude.2.json for the retry) so cost and timing of every attempt can be summed.
 func claudeThinker(env Env, dir string) Thinker {
+	attempt := 0
 	return func(ctx context.Context, system, user string) (json.RawMessage, error) {
+		attempt++
+		envelope := "claude.json"
+		if attempt > 1 {
+			envelope = fmt.Sprintf("claude.%d.json", attempt)
+		}
 		ctx, cancel := context.WithTimeout(ctx, thinkTimeout)
 		defer cancel()
 		model := cmp.Or(env.Config.Model, "sonnet")
@@ -290,7 +274,7 @@ func claudeThinker(env Env, dir string) Thinker {
 		cmd.Stderr = &stderr
 		out, err := cmd.Output()
 		if len(out) > 0 {
-			_ = os.WriteFile(filepath.Join(dir, "claude.json"), out, 0o644)
+			_ = os.WriteFile(filepath.Join(dir, envelope), out, 0o644)
 		}
 		if errors.Is(err, exec.ErrNotFound) {
 			return nil, errors.New("claude: not found on PATH. Install Claude Code, or set PATH in the launchd plist")
@@ -350,7 +334,7 @@ func thinkDir(ctx context.Context, env Env, dir string, llm Thinker, dryRun bool
 	if dryRun {
 		return nil
 	}
-	for _, f := range []string{"brief.json", "think.error.txt", "think.json"} {
+	for _, f := range []string{"brief.json", "think.error.txt", "think.json", "claude.json", "claude.2.json"} {
 		os.Remove(filepath.Join(dir, f))
 	}
 	b, err := think(ctx, raw, env.Config, llm)

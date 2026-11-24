@@ -80,9 +80,11 @@ func runOne(ctx context.Context, env Env, s source) (items []Item, st runResult)
 			err = fmt.Errorf("%s: timeout after %s", s.name, timeout)
 		}
 		st.Error = err.Error()
-		return nil, st
+		if len(got) == 0 {
+			return nil, st
+		}
 	}
-	st.OK = true
+	st.OK = true // partial results still count: the error stays visible in the footer
 	for _, it := range got {
 		if it.Validate() != nil {
 			st.Dropped++
