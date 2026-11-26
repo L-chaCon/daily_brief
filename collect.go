@@ -17,7 +17,8 @@ type source struct {
 
 var sources = []source{
 	{"github", collectGitHub, 0},
-	{"jira", collectJira, 60 * time.Second}, // one acli call per issue
+	{"jira", collectJira, 60 * time.Second},   // one acli call per issue
+	{"slack", collectSlack, 90 * time.Second}, // claude -p + connector connect, ≤ 3 search pages
 }
 
 const sourceTimeout = 20 * time.Second
