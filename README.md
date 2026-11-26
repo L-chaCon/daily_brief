@@ -7,43 +7,35 @@ matters, and writes one calm HTML page for the day.
 brief collect → raw.json → brief think → brief.json → brief render → brief.html
 ```
 
-## Dependencies
+## Install
 
-| Tool | Why | Install |
+```bash
+brew install L-chaCon/tap/brief
+```
+
+`brief` stores no tokens: each source reuses a tool that already owns its login. Install the ones you use:
+
+| Tool | Used for | Install |
 |---|---|---|
-| Go 1.27+ | build | `brew install go` |
-| [`gh`](https://cli.github.com) | GitHub source (uses gh's login, no token to manage) | `brew install gh && gh auth login` |
-| [`icalBuddy`](https://hasseg.org/icalBuddy/) | **Planned** local Calendar transport (today Calendar comes from the claude.ai Google Calendar connector) | `brew install ical-buddy` |
-| [`acli`](https://developer.atlassian.com/cloud/acli/) | Jira source (acli owns the login, like gh for GitHub) | `brew tap atlassian/homebrew-acli && brew install acli` |
-| [`claude`](https://docs.claude.com/en/docs/claude-code) | think stage (`claude -p`); Slack and Calendar sources through the claude.ai Slack / Google Calendar connectors (no app, no token) | see Claude Code docs, then log in with the account that has the Slack connector |
-| `gitleaks` | pre-commit secret scan | `brew install gitleaks` |
+| [`gh`](https://cli.github.com) | GitHub | `brew install gh` |
+| [`acli`](https://developer.atlassian.com/cloud/acli/) | Jira | `brew install atlassian/acli/acli` |
+| [Claude Code](https://docs.claude.com/en/docs/claude-code) | picking what matters (`claude -p`); Slack and Calendar through the claude.ai Slack / Google Calendar connectors | `brew install --cask claude-code` |
 
-macOS only: Calendar access is granted per app. `icalBuddy calendars` must list your calendars from
-the terminal (or launchd job) that runs `brief`; some terminals can't request the permission yet.
+A source that isn't set up shows its fix on the page; the rest of the brief still works.
 
 ## Connecting accounts
-
-No tokens are stored by `brief`: each source reuses a tool that already handles its own login.
 
 ```bash
 gh auth login                      # GitHub
 acli jira auth login --web         # Jira: browser (OAuth) login, acli stores and refreshes it
-acli jira auth status              # check it
-claude                             # think stage: log in once with /login
-                                   # Slack/Calendar: same login; that account must have the claude.ai Slack and Google Calendar connectors.
-                                   # Set "claude_config_dir" in config.json to that account.
+claude                             # then /login, with the account that has the claude.ai Slack and Google Calendar connectors
 ```
 
-## Installation
+If that Claude account isn't your default one, point `brief` at it in `~/.config/brief/config.json`:
 
-```bash
-brew install L-chaCon/tap/brief    # Homebrew: builds the latest release from source
-# or, from a clone:
-go build -o brief .
+```json
+{ "claude_config_dir": "~/.claude-work" }
 ```
-
-Releasing: tag `vX.Y.Z` and push the tag, then update `url` and `sha256` in
-[`L-chaCon/homebrew-tap`](https://github.com/L-chaCon/homebrew-tap) `Formula/brief.rb`.
 
 ## Usage
 
