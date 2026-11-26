@@ -37,8 +37,13 @@ claude                             # think stage: log in once with /login
 ## Installation
 
 ```bash
+brew install L-chaCon/tap/brief    # Homebrew: builds the latest release from source
+# or, from a clone:
 go build -o brief .
 ```
+
+Releasing: tag `vX.Y.Z` and push the tag, then update `url` and `sha256` in
+[`L-chaCon/homebrew-tap`](https://github.com/L-chaCon/homebrew-tap) `Formula/brief.rb`.
 
 ## Usage
 
