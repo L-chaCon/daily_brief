@@ -1,0 +1,319 @@
+{
+ "accessRole": "owner",
+ "defaultReminders": [
+  {
+   "method": "popup",
+   "minutes": 10
+  }
+ ],
+ "events": [
+  {
+   "id": "fake0allday1",
+   "status": "confirmed",
+   "htmlLink": "https://www.google.com/calendar/event?eid=ZmFrZSfake0a",
+   "created": "2026-09-01T10:00:00.000Z",
+   "updated": "2026-10-01T10:00:00.000Z",
+   "start": {
+    "date": "2026-10-14"
+   },
+   "end": {
+    "date": "2026-10-15"
+   },
+   "eventType": "DEFAULT",
+   "creator": {
+    "email": "pat@example.com",
+    "self": true
+   },
+   "organizer": {
+    "email": "pat@example.com",
+    "self": true
+   },
+   "useDefaultReminders": true,
+   "summary": "Team offsite prep",
+   "transparency": "transparent"
+  },
+  {
+   "id": "fake0multiday",
+   "status": "confirmed",
+   "htmlLink": "https://www.google.com/calendar/event?eid=ZmFrZSfake0m",
+   "created": "2026-09-01T10:00:00.000Z",
+   "updated": "2026-10-01T10:00:00.000Z",
+   "start": {
+    "date": "2026-10-12"
+   },
+   "end": {
+    "date": "2026-10-17"
+   },
+   "eventType": "DEFAULT",
+   "creator": {
+    "email": "pat@example.com",
+    "self": true
+   },
+   "organizer": {
+    "email": "pat@example.com",
+    "self": true
+   },
+   "useDefaultReminders": true,
+   "summary": "Conference week"
+  },
+  {
+   "id": "fake0started",
+   "status": "confirmed",
+   "htmlLink": "https://www.google.com/calendar/event?eid=ZmFrZSfake0s",
+   "created": "2026-09-01T10:00:00.000Z",
+   "updated": "2026-10-01T10:00:00.000Z",
+   "start": {
+    "dateTime": "2026-10-13T22:00:00+01:00",
+    "timeZone": "Europe/London"
+   },
+   "end": {
+    "dateTime": "2026-10-14T01:00:00+01:00",
+    "timeZone": "Europe/London"
+   },
+   "eventType": "DEFAULT",
+   "creator": {
+    "email": "pat@example.com",
+    "self": true
+   },
+   "organizer": {
+    "email": "pat@example.com",
+    "self": true
+   },
+   "useDefaultReminders": true,
+   "summary": "Overnight batch watch"
+  },
+  {
+   "id": "fake0standup_20261014T080000Z",
+   "status": "confirmed",
+   "htmlLink": "https://www.google.com/calendar/event?eid=ZmFrZSfake0s",
+   "created": "2026-09-01T10:00:00.000Z",
+   "updated": "2026-10-01T10:00:00.000Z",
+   "start": {
+    "dateTime": "2026-10-14T09:00:00+01:00",
+    "timeZone": "Europe/London"
+   },
+   "end": {
+    "dateTime": "2026-10-14T09:15:00+01:00",
+    "timeZone": "Europe/London"
+   },
+   "eventType": "DEFAULT",
+   "creator": {
+    "email": "pat@example.com",
+    "self": true
+   },
+   "organizer": {
+    "email": "pat@example.com",
+    "self": true
+   },
+   "useDefaultReminders": true,
+   "summary": "Team Daily Standup",
+   "recurringEventId": "fake0standup",
+   "originalStartTime": {
+    "dateTime": "2026-10-14T09:00:00+01:00",
+    "timeZone": "Europe/London"
+   },
+   "conferenceUrl": "https://meet.google.com/abc-defg-hij",
+   "conferenceData": {
+    "solutionName": "Google Meet",
+    "videoEntryPoint": {
+     "uri": "https://meet.google.com/abc-defg-hij"
+    }
+   },
+   "attendees": [
+    {
+     "email": "pat@example.com",
+     "self": true,
+     "responseStatus": "accepted"
+    },
+    {
+     "email": "kyrone@example.com",
+     "displayName": "Kyrone Example",
+     "responseStatus": "accepted"
+    },
+    {
+     "email": "sam.example@example.com",
+     "responseStatus": "needsAction"
+    },
+    {
+     "email": "c_fake0room4@resource.calendar.google.com",
+     "displayName": "Room 4",
+     "resource": true,
+     "responseStatus": "accepted"
+    }
+   ]
+  },
+  {
+   "id": "fake0review",
+   "status": "confirmed",
+   "htmlLink": "https://www.google.com/calendar/event?eid=ZmFrZSfake0r",
+   "created": "2026-09-01T10:00:00.000Z",
+   "updated": "2026-10-01T10:00:00.000Z",
+   "start": {
+    "dateTime": "2026-10-14T13:00:00Z",
+    "timeZone": "Europe/London"
+   },
+   "end": {
+    "dateTime": "2026-10-14T14:00:00Z",
+    "timeZone": "Europe/London"
+   },
+   "eventType": "DEFAULT",
+   "creator": {
+    "email": "pat@example.com",
+    "self": true
+   },
+   "organizer": {
+    "email": "kyrone@example.com",
+    "displayName": "Kyrone Example"
+   },
+   "useDefaultReminders": true,
+   "summary": "Design review: <b>billing</b>",
+   "description": "<p>Agenda:<br>1. Limits &amp; quotas<br>Doc: <a href=\"https://docs.example.com/d\">here</a></p>",
+   "location": "Room 4 / https://zoom.us/j/123",
+   "attendees": [
+    {
+     "email": "pat@example.com",
+     "self": true,
+     "responseStatus": "needsAction"
+    },
+    {
+     "email": "kyrone@example.com",
+     "displayName": "Kyrone Example",
+     "organizer": true,
+     "responseStatus": "accepted"
+    }
+   ]
+  },
+  {
+   "id": "fake0declined",
+   "status": "confirmed",
+   "htmlLink": "https://www.google.com/calendar/event?eid=ZmFrZSfake0d",
+   "created": "2026-09-01T10:00:00.000Z",
+   "updated": "2026-10-01T10:00:00.000Z",
+   "start": {
+    "dateTime": "2026-10-14T16:00:00+01:00",
+    "timeZone": "Europe/London"
+   },
+   "end": {
+    "dateTime": "2026-10-14T17:00:00+01:00",
+    "timeZone": "Europe/London"
+   },
+   "eventType": "DEFAULT",
+   "creator": {
+    "email": "pat@example.com",
+    "self": true
+   },
+   "organizer": {
+    "email": "pat@example.com",
+    "self": true
+   },
+   "useDefaultReminders": true,
+   "summary": "Optional all-hands",
+   "attendees": [
+    {
+     "email": "pat@example.com",
+     "self": true,
+     "responseStatus": "declined"
+    },
+    {
+     "email": "sam.example@example.com",
+     "displayName": "Sam Example",
+     "responseStatus": "accepted"
+    }
+   ]
+  },
+  {
+   "id": "fake0cancelled",
+   "status": "cancelled",
+   "htmlLink": "https://www.google.com/calendar/event?eid=ZmFrZSfake0c",
+   "created": "2026-09-01T10:00:00.000Z",
+   "updated": "2026-10-01T10:00:00.000Z",
+   "start": {
+    "dateTime": "2026-10-14T17:00:00+01:00",
+    "timeZone": "Europe/London"
+   },
+   "end": {
+    "dateTime": "2026-10-14T17:30:00+01:00",
+    "timeZone": "Europe/London"
+   },
+   "eventType": "DEFAULT",
+   "creator": {
+    "email": "pat@example.com",
+    "self": true
+   },
+   "organizer": {
+    "email": "pat@example.com",
+    "self": true
+   },
+   "useDefaultReminders": true,
+   "summary": "Cancelled sync"
+  },
+  {
+   "id": "fake0ooo",
+   "status": "confirmed",
+   "htmlLink": "https://www.google.com/calendar/event?eid=ZmFrZSfake0o",
+   "created": "2026-09-01T10:00:00.000Z",
+   "updated": "2026-10-01T10:00:00.000Z",
+   "start": {
+    "dateTime": "2026-10-15T13:00:00+01:00",
+    "timeZone": "Europe/London"
+   },
+   "end": {
+    "dateTime": "2026-10-15T18:00:00+01:00",
+    "timeZone": "Europe/London"
+   },
+   "eventType": "OUT_OF_OFFICE",
+   "creator": {
+    "email": "pat@example.com",
+    "self": true
+   },
+   "organizer": {
+    "email": "pat@example.com",
+    "self": true
+   },
+   "useDefaultReminders": true,
+   "summary": "Out of office"
+  },
+  {
+   "id": "fake0notitle",
+   "status": "confirmed",
+   "htmlLink": "https://www.google.com/calendar/event?eid=ZmFrZSfake0n",
+   "created": "2026-09-01T10:00:00.000Z",
+   "updated": "2026-10-01T10:00:00.000Z",
+   "start": {
+    "dateTime": "2026-10-15T10:00:00+01:00",
+    "timeZone": "Europe/London"
+   },
+   "end": {
+    "dateTime": "2026-10-15T10:30:00+01:00",
+    "timeZone": "Europe/London"
+   },
+   "eventType": "DEFAULT",
+   "creator": {
+    "email": "pat@example.com",
+    "self": true
+   },
+   "organizer": {
+    "email": "pat@example.com",
+    "self": true
+   },
+   "useDefaultReminders": true,
+   "visibility": "private"
+  },
+  {
+   "id": "fake0workloc",
+   "status": "confirmed",
+   "summary": "Home",
+   "eventType": "WORKING_LOCATION",
+   "htmlLink": "https://www.google.com/calendar/event?eid=ZmFrZSfake0w",
+   "start": {
+    "date": "2026-10-14"
+   },
+   "end": {
+    "date": "2026-10-15"
+   }
+  }
+ ],
+ "summary": "pat@example.com",
+ "timeZone": "Europe/London",
+ "updated": "2026-10-14T06:00:00.000Z"
+}

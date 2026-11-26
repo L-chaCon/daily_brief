@@ -20,8 +20,9 @@ type Env struct {
 	Now     time.Time      // injected clock; only main.go calls time.Now()
 	Loc     *time.Location // your zone
 	Run     func(ctx context.Context, name string, args ...string) ([]byte, error)
-	DataDir string // run folders live here: <DataDir>/<YYYY-MM-DD>/
-	RunDir  string // this run's folder, set by collect; connector transcripts are saved here ("" = don't save)
+	DataDir string    // run folders live here: <DataDir>/<YYYY-MM-DD>/
+	Date    civilDate // the run's date (--date), set by collect; zero = today (see day)
+	RunDir  string    // this run's folder, set by collect; connector transcripts are saved here ("" = don't save)
 }
 
 // Config is ~/.config/brief/config.json: non-secret settings only. Every field has a default,
@@ -101,6 +102,14 @@ func execRun(ctx context.Context, name string, args ...string) ([]byte, error) {
 		return out, err
 	}
 	return out, nil
+}
+
+// day is the run's date: what --date asked for, else today in env.Loc.
+func (env Env) day() civilDate {
+	if env.Date != (civilDate{}) {
+		return env.Date
+	}
+	return dateOf(env.Now.In(env.Loc))
 }
 
 func (env Env) runDir(d civilDate) string { return filepath.Join(env.DataDir, d.String()) }

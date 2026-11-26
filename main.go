@@ -189,7 +189,7 @@ func cmdCollect(env Env, args []string, stdout, stderr io.Writer) int {
 }
 
 func collectTo(env Env, d civilDate, stderr io.Writer) (string, error) {
-	env.RunDir = env.runDir(d)
+	env.Date, env.RunDir = d, env.runDir(d)
 	if err := os.MkdirAll(env.RunDir, 0o755); err != nil {
 		return "", err
 	}
