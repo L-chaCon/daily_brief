@@ -39,9 +39,11 @@ func TestBuildPrompt(t *testing.T) {
 	}
 }
 
+// What must never reach the model: invalid items (an email in facts) and links in bodies.
 func TestBuildPromptPrivacy(t *testing.T) {
 	raw, _ := loadBasic(t)
 	raw.Items[4].Facts = append(raw.Items[4].Facts, "from: sam@example.com") // invalid: email in facts
+	raw.Items[5].Body = "see https://example.com/x and http://y.example"
 	_, user, err := buildPrompt(raw, Config{})
 	if err != nil {
 		t.Fatal(err)
@@ -51,6 +53,9 @@ func TestBuildPromptPrivacy(t *testing.T) {
 	}
 	if !strings.Contains(user, "NOTE: 1 invalid items omitted") {
 		t.Error("dropping must be visible in the prompt")
+	}
+	if strings.Contains(user, "http") || !strings.Contains(user, "see [link] and [link]") {
+		t.Error("links in bodies must not reach the model")
 	}
 }
 
@@ -186,16 +191,4 @@ func TestSchemaMatchesStructs(t *testing.T) {
 	check("Update", reflect.TypeFor[Update](), schema.Properties["updates"].Items.Required)
 	check("ScheduleNote", reflect.TypeFor[ScheduleNote](), schema.Properties["schedule_notes"].Items.Required)
 	check("Reading", reflect.TypeFor[Reading](), schema.Properties["reading"].Items.Required)
-}
-
-func TestPromptStripsLinksFromBodies(t *testing.T) {
-	raw, _ := loadBasic(t)
-	raw.Items[5].Body = "see https://example.com/x and http://y.example"
-	_, user, err := buildPrompt(raw, Config{})
-	if err != nil {
-		t.Fatal(err)
-	}
-	if strings.Contains(user, "http") || !strings.Contains(user, "see [link] and [link]") {
-		t.Errorf("links must not reach the model")
-	}
 }

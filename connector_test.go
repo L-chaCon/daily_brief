@@ -154,3 +154,46 @@ func TestCallConnector(t *testing.T) {
 		t.Errorf("want PATH hint, got %v", err)
 	}
 }
+
+// fakeClaude stands in for `env … claude -p` in a collector test: it reads the tool and arguments Go
+// wrote into the prompt, asks answer for that tool's output, and replies with a transcript of exactly
+// that one call. So collector tests exercise the real callConnector and toolResult.
+func fakeClaude(t *testing.T, answer func(tool string, args map[string]any) []byte) func(context.Context, string, ...string) ([]byte, error) {
+	return func(_ context.Context, _ string, argv ...string) ([]byte, error) {
+		i := slices.Index(argv, "-p")
+		if i < 0 || i+1 >= len(argv) {
+			t.Fatalf("no -p prompt in %v", argv)
+		}
+		rest, ok := strings.CutPrefix(argv[i+1], "Call ")
+		tool, rest, _ := strings.Cut(rest, " exactly once with exactly these arguments: ")
+		js, _, found := strings.Cut(rest, ". Then reply: done.")
+		var args map[string]any
+		if !ok || !found || json.Unmarshal([]byte(js), &args) != nil {
+			t.Fatalf("prompt not in the expected shape: %q", argv[i+1])
+		}
+		return fakeStream(t, tool, args, answer(tool, args)), nil
+	}
+}
+
+// fakeStream builds a claude stream-json transcript with one call to tool and its result.
+func fakeStream(t *testing.T, tool string, args map[string]any, result []byte) []byte {
+	t.Helper()
+	ev := []any{
+		map[string]any{"type": "assistant", "message": map[string]any{"content": []any{
+			map[string]any{"type": "tool_use", "id": "toolu_fake", "name": tool, "input": args}}}},
+		map[string]any{"type": "user", "message": map[string]any{"content": []any{
+			map[string]any{"type": "tool_result", "tool_use_id": "toolu_fake", "content": []any{
+				map[string]any{"type": "text", "text": string(result)}}}}}},
+		map[string]any{"type": "result", "subtype": "success", "is_error": false, "result": "done"},
+	}
+	var sb strings.Builder
+	for _, e := range ev {
+		b, err := json.Marshal(e)
+		if err != nil {
+			t.Fatal(err)
+		}
+		sb.Write(b)
+		sb.WriteByte('\n')
+	}
+	return []byte(sb.String())
+}

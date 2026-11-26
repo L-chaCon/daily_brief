@@ -39,6 +39,22 @@ func loadBasic(t *testing.T) (Raw, Brief) {
 	return r, b
 }
 
+// basicRunDir is a run folder holding the basic fixture's raw.json and brief.json.
+func basicRunDir(t *testing.T) string {
+	t.Helper()
+	dir := t.TempDir()
+	for _, f := range []string{"raw.json", "brief.json"} {
+		b, err := os.ReadFile(filepath.Join(basicDir, f))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(dir, f), b, 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	return dir
+}
+
 func TestJoin(t *testing.T) {
 	raw, b := loadBasic(t)
 	p := join(raw, &b, nil)
@@ -185,11 +201,7 @@ func TestNoTrustedTemplateTypes(t *testing.T) {
 }
 
 func TestRenderCommand(t *testing.T) {
-	dir := t.TempDir()
-	for _, f := range []string{"raw.json", "brief.json"} {
-		b, _ := os.ReadFile(filepath.Join(basicDir, f))
-		os.WriteFile(filepath.Join(dir, f), b, 0o644)
-	}
+	dir := basicRunDir(t)
 	var stdout, stderr bytes.Buffer
 	if code := run([]string{"render", "--dir", dir}, &stdout, &stderr); code != 0 {
 		t.Fatalf("exit %d: %s", code, stderr.String())
@@ -216,11 +228,7 @@ func TestRenderCommand(t *testing.T) {
 }
 
 func TestRenderShowsClaudeAccount(t *testing.T) {
-	dir := t.TempDir()
-	for _, f := range []string{"raw.json", "brief.json"} {
-		b, _ := os.ReadFile(filepath.Join(basicDir, f))
-		os.WriteFile(filepath.Join(dir, f), b, 0o644)
-	}
+	dir := basicRunDir(t)
 	writeJSONFile(filepath.Join(dir, "think.json"), thinkMeta{Account: "~/.claude-work", Model: "sonnet"})
 	if _, err := renderDir(dir, false); err != nil {
 		t.Fatal(err)

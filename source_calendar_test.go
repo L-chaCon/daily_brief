@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"os"
+	"reflect"
 	"strings"
 	"testing"
 	"time"
@@ -190,20 +191,12 @@ func TestCollectCalendar(t *testing.T) {
 	env := testEnv(t)
 	env.RunDir = t.TempDir()
 	page, _ := os.ReadFile("testdata/calendar/google_list_events_more.json")
-	wantArgs := map[string]any{"startTime": "2026-10-14T00:00:00", "endTime": "2026-10-16T00:00:00",
-		"timeZone": "Europe/London", "orderBy": "startTime", "pageSize": 100}
-	env.Run = func(_ context.Context, name string, args ...string) ([]byte, error) {
-		var prompt string
-		for i, a := range args {
-			if a == "-p" {
-				prompt = args[i+1]
-			}
-		}
-		if !strings.Contains(prompt, `"startTime":"2026-10-14T00:00:00"`) || !strings.Contains(prompt, "list_events") {
-			t.Errorf("prompt = %q", prompt)
-		}
-		return fakeStream(t, "mcp__claude_ai_Google_Calendar__list_events", wantArgs, page), nil
-	}
+	var gotTool string
+	var gotArgs map[string]any
+	env.Run = fakeClaude(t, func(tool string, in map[string]any) []byte {
+		gotTool, gotArgs = tool, in
+		return page
+	})
 	items, err := collectCalendar(context.Background(), env)
 	if len(items) != 7 {
 		t.Errorf("got %d items, want 7", len(items))
@@ -211,17 +204,20 @@ func TestCollectCalendar(t *testing.T) {
 	if err == nil || !strings.Contains(err.Error(), "more than 100") {
 		t.Errorf("nextPageToken: want a note, got %v", err)
 	}
+	// Run date 00:00 → +2 days, local time without offset plus the zone, as the connector wants.
+	want, _ := normJSON(map[string]any{"startTime": "2026-10-14T00:00:00", "endTime": "2026-10-16T00:00:00",
+		"timeZone": "Europe/London", "orderBy": "startTime", "pageSize": 100})
+	if gotTool != "mcp__claude_ai_Google_Calendar__list_events" || !reflect.DeepEqual(gotArgs, want) {
+		t.Errorf("call = %s %v", gotTool, gotArgs)
+	}
 
 	// --date picks the day, not the clock.
 	env.Date = civilDate{2026, 10, 20}
-	env.Run = func(_ context.Context, name string, args ...string) ([]byte, error) {
-		if !strings.Contains(strings.Join(args, " "), `"startTime":"2026-10-20T00:00:00"`) {
-			t.Errorf("--date ignored: %v", args)
-		}
-		return fakeStream(t, "mcp__claude_ai_Google_Calendar__list_events", map[string]any{"startTime": "2026-10-20T00:00:00", "endTime": "2026-10-22T00:00:00",
-			"timeZone": "Europe/London", "orderBy": "startTime", "pageSize": 100}, []byte(`{"events":[]}`)), nil
-	}
+	page = []byte(`{"events":[]}`)
 	if _, err := collectCalendar(context.Background(), env); err != nil {
 		t.Error(err)
+	}
+	if gotArgs["startTime"] != "2026-10-20T00:00:00" || gotArgs["endTime"] != "2026-10-22T00:00:00" {
+		t.Errorf("--date ignored: %v", gotArgs)
 	}
 }

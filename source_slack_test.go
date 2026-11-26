@@ -161,27 +161,15 @@ func TestCollectSlack(t *testing.T) {
 
 	pages := map[string][]byte{} // cursor ("" = first page) → tool output
 	var calls []string
-	env.Run = func(_ context.Context, name string, args ...string) ([]byte, error) {
-		var prompt string
-		for i, a := range args {
-			if a == "-p" {
-				prompt = args[i+1]
-			}
-		}
-		_, js, _ := strings.Cut(prompt, "arguments: ")
-		js, _, _ = strings.Cut(js, ". Then")
-		var in map[string]any
-		if err := json.Unmarshal([]byte(js), &in); err != nil {
-			t.Fatalf("prompt args %q: %v", js, err)
-		}
+	env.Run = fakeClaude(t, func(_ string, in map[string]any) []byte {
 		// The query is fixed by Go: DMs to me since two days before today (Slack's after: is exclusive).
 		if in["filters"] != "to:me after:2026-10-12" {
 			t.Errorf("filters = %v", in["filters"])
 		}
 		cursor, _ := in["cursor"].(string)
 		calls = append(calls, cursor)
-		return fakeStream(t, slackSearchTool, in, pages[cursor]), nil
-	}
+		return pages[cursor]
+	})
 
 	// More pages exist, but this page already reaches past the 24 h window: one call, no note.
 	pages[""] = full
@@ -206,27 +194,4 @@ func TestCollectSlack(t *testing.T) {
 	if len(calls) != slackMaxPages || err == nil || !strings.Contains(err.Error(), "more than 60") {
 		t.Errorf("cap: calls %q, err %v", calls, err)
 	}
-}
-
-// fakeStream builds a claude stream-json transcript with one call to tool and its result.
-func fakeStream(t *testing.T, tool string, args map[string]any, result []byte) []byte {
-	t.Helper()
-	ev := []any{
-		map[string]any{"type": "assistant", "message": map[string]any{"content": []any{
-			map[string]any{"type": "tool_use", "id": "toolu_fake", "name": tool, "input": args}}}},
-		map[string]any{"type": "user", "message": map[string]any{"content": []any{
-			map[string]any{"type": "tool_result", "tool_use_id": "toolu_fake", "content": []any{
-				map[string]any{"type": "text", "text": string(result)}}}}}},
-		map[string]any{"type": "result", "subtype": "success", "is_error": false, "result": "done"},
-	}
-	var sb strings.Builder
-	for _, e := range ev {
-		b, err := json.Marshal(e)
-		if err != nil {
-			t.Fatal(err)
-		}
-		sb.Write(b)
-		sb.WriteByte('\n')
-	}
-	return []byte(sb.String())
 }

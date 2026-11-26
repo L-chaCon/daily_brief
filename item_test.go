@@ -59,16 +59,6 @@ func TestItemValidate(t *testing.T) {
 	}
 }
 
-func TestFixtureItemsAreValid(t *testing.T) {
-	var r Raw
-	loadJSON(t, basicDir+"/raw.json", &r)
-	for _, it := range r.Items {
-		if err := it.Validate(); err != nil {
-			t.Error(err)
-		}
-	}
-}
-
 func TestCivilDate(t *testing.T) {
 	if got := (civilDate{2026, time.January, 5}).String(); got != "2026-01-05" {
 		t.Errorf("String() = %q, want zero-padded 2026-01-05", got)

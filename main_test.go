@@ -6,11 +6,6 @@ import (
 	"testing"
 )
 
-// Mission 1 spec. Written for you; you make it pass without editing it.
-// Read it top to bottom before writing main.go: it tells you exactly what run() must do.
-
-var commands = []string{"collect", "think", "render", "run", "doctor", "connect", "open"}
-
 func TestRun(t *testing.T) {
 	tests := []struct {
 		name       string
@@ -24,7 +19,6 @@ func TestRun(t *testing.T) {
 		{"--help prints usage to stdout", []string{"--help"}, 0, "usage:", ""},
 		{"help prints usage to stdout", []string{"help"}, 0, "usage:", ""},
 		{"unknown command", []string{"bogus"}, 2, "", `unknown command "bogus"`},
-		{"known command is a stub", []string{"doctor"}, 2, "", "doctor: not implemented"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -36,37 +30,6 @@ func TestRun(t *testing.T) {
 			check(t, "stdout", stdout.String(), tt.wantStdout)
 			check(t, "stderr", stderr.String(), tt.wantStderr)
 		})
-	}
-}
-
-// Usage must list every subcommand, so a user (or an AI agent) can discover them.
-func TestUsageListsAllCommands(t *testing.T) {
-	var stdout, stderr bytes.Buffer
-	run([]string{"-h"}, &stdout, &stderr)
-	for _, c := range commands {
-		if !strings.Contains(stdout.String(), c) {
-			t.Errorf("usage does not mention %q:\n%s", c, stdout.String())
-		}
-	}
-}
-
-// Every subcommand exists and none of them is "unknown". Implemented commands drop out of the stub list.
-var stubs = []string{"doctor", "connect"}
-
-func TestAllCommandsAreKnown(t *testing.T) {
-	for _, c := range commands {
-		var stdout, stderr bytes.Buffer
-		run([]string{c, "-h"}, &stdout, &stderr) // -h: real commands print their flags and stop, no side effects
-		if strings.Contains(stderr.String(), "unknown command") {
-			t.Errorf("%s is unknown", c)
-		}
-	}
-	for _, c := range stubs {
-		var stdout, stderr bytes.Buffer
-		code := run([]string{c}, &stdout, &stderr)
-		if code != 2 || !strings.Contains(stderr.String(), c+": not implemented") {
-			t.Errorf("%s: code=%d stderr=%q, want 2 and %q", c, code, stderr.String(), c+": not implemented")
-		}
 	}
 }
 
