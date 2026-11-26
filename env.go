@@ -21,6 +21,7 @@ type Env struct {
 	Loc     *time.Location // your zone
 	Run     func(ctx context.Context, name string, args ...string) ([]byte, error)
 	DataDir string // run folders live here: <DataDir>/<YYYY-MM-DD>/
+	RunDir  string // this run's folder, set by collect; connector transcripts are saved here ("" = don't save)
 }
 
 // Config is ~/.config/brief/config.json: non-secret settings only. Every field has a default,

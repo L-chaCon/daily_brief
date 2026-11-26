@@ -189,6 +189,14 @@ func cmdCollect(env Env, args []string, stdout, stderr io.Writer) int {
 }
 
 func collectTo(env Env, d civilDate, stderr io.Writer) (string, error) {
+	env.RunDir = env.runDir(d)
+	if err := os.MkdirAll(env.RunDir, 0o755); err != nil {
+		return "", err
+	}
+	old, _ := filepath.Glob(filepath.Join(env.RunDir, "*.claude.jsonl")) // connector transcripts of an earlier collect
+	for _, f := range old {
+		os.Remove(f)
+	}
 	raw := collectAll(context.Background(), env, d, sources)
 	for _, s := range raw.Sources {
 		mark := "✓"
